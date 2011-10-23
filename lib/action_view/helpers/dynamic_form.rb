@@ -262,21 +262,27 @@ module ActionView
 
       def all_input_tags(record, record_name, options)
         if options[:bootstrap_form]
-          input_block = bootstrap_input_block
+          input_block = bootstrap_input_block(options)
         else
-          input_block = options[:input_block] || default_input_block
+          input_block = options[:input_block] || default_input_block(options)
         end
 
         record.class.content_columns.collect{ |column| input_block.call(record_name, column) }.join("\n")
       end
 
-      def bootstrap_input_block
+      def bootstrap_input_block(options)
         Proc.new { |record, column|
-          "<div class='clearfix'><label for='xlInput'>#{column.human_name}</label> <div class='input'>#{input(record, column.name, :class => 'xlarge', :id => 'xlInput')}</div></div>"}
+          if options[:reject].include?(column.name) == false
+            "<div class='clearfix'><label for='xlInput'>#{column.human_name}</label> <div class='input'>#{input(record, column.name, :class => 'xlarge', :id => 'xlInput')}</div></div>"
+          end
+          }
       end
 
-      def default_input_block
-        Proc.new { |record, column| %(<p><label for="#{record}_#{column.name}">#{column.human_name}</label><br />#{input(record, column.name)}</p>) }
+      def default_input_block(options)
+        Proc.new { |record, column| 
+          if options[:reject].include?(column.name) == false
+            %(<p><label for="#{record}_#{column.name}">#{column.human_name}</label><br />#{input(record, column.name)}</p>)
+          end}
       end
 
       module InstanceTagMethods

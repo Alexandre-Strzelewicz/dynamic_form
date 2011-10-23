@@ -14,6 +14,8 @@ It also adds `f.error_messages` and `f.error_messages_on` to your form builders.
 
 Read `/lib/action_view/helpers/dynamic_form.rb` for details of each method.
 
+Example of usage :
+`<%= form(:testoo, :bootstrap_form => true, :reject => ['created_at', 'updated_at']) %>`
 
 ---
 
@@ -21,12 +23,15 @@ Helpers Details
 ===============
 
 * form helper options
-- action
-- input_block
-- method
+- action (form url)
+- input_block (if you want to render the form in a different way)
+`Proc.new { |record, column| %(<p><label for="#{record}_#{column.name}">#{column.human_name}</label><br />#{input(record, column.name)}</p>) }`
+- method 
 - multipart
-- submit_value
+- submit_value 
 - bootstrap_form (adaptable for using bootstrap CSS from Twitter)
+- reject (to not render some fields)
+`<%= form(:testoo, :bootstrap_form => true, :reject => ['created_at', 'updated_at']) %>`
 
 DynamicErrors
 =============
