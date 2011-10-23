@@ -73,13 +73,32 @@ module ActionView
         record = instance_variable_get("@#{record_name}")
         record = convert_to_model(record)
 
-        options = options.symbolize_keys
-        options[:action] ||= record.persisted? ? "update" : "create"
+        #
+        #options[:action] ||= record.persisted? ? "update" : "create"
+        #action = url_for(:action => options[:action], :id => record)
+        #
+
+        #
+        # For being OK with Rails scaffold generator
+        #
+        if record.persisted?
+          options[:action] ||= "update"
+          options[:method] ||= "put"
+        else
+          options[:action] ||= "create"
+          options[:method] ||= "post"
+        end
+
         action = url_for(:action => options[:action], :id => record)
 
+        
         submit_value = options[:submit_value] || options[:action].gsub(/[^\w]/, '').capitalize
 
-        contents = form_tag({:action => action}, :method =>(options[:method] || 'post'), :enctype => options[:multipart] ? 'multipart/form-data': nil)
+        #
+        # Action removed for form tag
+        #
+        contents = form_tag(action, :method =>(options[:method] || 'post'), :enctype => options[:multipart] ? 'multipart/form-data': nil)
+
         contents.safe_concat hidden_field(record_name, :id) if record.persisted?
         contents.safe_concat all_input_tags(record, record_name, options)
         yield contents if block_given?
@@ -242,8 +261,18 @@ module ActionView
     private
 
       def all_input_tags(record, record_name, options)
-        input_block = options[:input_block] || default_input_block
+        if options[:bootstrap_form]
+          input_block = bootstrap_input_block
+        else
+          input_block = options[:input_block] || default_input_block
+        end
+
         record.class.content_columns.collect{ |column| input_block.call(record_name, column) }.join("\n")
+      end
+
+      def bootstrap_input_block
+        Proc.new { |record, column|
+          "<div class='clearfix'><label for='xlInput'>#{column.human_name}</label> <div class='input'>#{input(record, column.name, :class => 'xlarge', :id => 'xlInput')}</div></div>"}
       end
 
       def default_input_block
